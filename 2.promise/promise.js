@@ -163,4 +163,13 @@ class Promise {
     }
 }
 
+Promise.defer = Promise.deferred = function() {
+    let dfd = {};
+    new Promise((resolve, reject) => {
+        dfd.resolve = resolve;
+        dfd.reject = reject;
+    })
+    return dfd;
+}
+
 module.exports = Promise;
