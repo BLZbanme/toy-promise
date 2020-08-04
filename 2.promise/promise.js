@@ -11,12 +11,23 @@ const resolvePromise = (promise2, x, resolve, reject) => {
     // promise 必会
     //判断数据类型 typeof constructor instanceof toString
     if (typeof x === 'object' &&  x !== null || typeof x === 'function') {
+        let called; //内部测试的时候，会成功和失败都调用
         try{
             let then = x.then; //取then，有可能这个then属性是通过defineProperty来定义的
             if (typeof then === 'function') { //当前有then方法，我就姑且认为他是一个promise
                 then.call(x, y => {
-                    resolve(y); //采用promise的成功结果将值向下传递
+                    if (called) {
+                        return;
+                    }
+                    called = true;
+                    // resolve(y); //采用promise的成功结果将值向下传递
+                    // y可能还是一个promise，直接解析的结果是一个普通值为止
+                    resolvePromise(promise2, y, resolve, reject); 
                 }, r => {
+                    if (called) {
+                        return;
+                    }
+                    called = true;
                     reject(r); //采用失败结果向下传递
                 }); //保证不用再次取then的值
             }
@@ -25,6 +36,11 @@ const resolvePromise = (promise2, x, resolve, reject) => {
             }
         }
         catch(e) {
+            //promise失败了，有可能还能调成功
+            if (called) {
+                return;
+            }
+            called = true;
             reject(e);
         }
     }
@@ -74,6 +90,10 @@ class Promise {
     }
 
     then(onfulfilled, onrejected) { //then 目前有两个参数 then方法就是异步的
+        //onfulfilled,onrejected是可选值
+        onfulfilled = typeof onfulfilled === 'function' ? onfulfilled : data => data;
+        onrejected = typeof onrejected === 'function' ? onrejected : err => {throw err};
+
         let promise2 = new Promise((resolve, reject) => { //executor 会立刻执行
             // 同步
             if (this.status === RESOLVED) {
