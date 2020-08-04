@@ -10,7 +10,7 @@ const resolvePromise = (promise2, x, resolve, reject) => {
     }
     // promise 必会
     //判断数据类型 typeof constructor instanceof toString
-    if (typeof x === 'object' &&  x !== null || typeof x === 'function') {
+    if ((typeof x === 'object' &&  x !== null) || typeof x === 'function') {
         let called; //内部测试的时候，会成功和失败都调用
         try{
             let then = x.then; //取then，有可能这个then属性是通过defineProperty来定义的
@@ -165,7 +165,7 @@ class Promise {
 
 Promise.defer = Promise.deferred = function() {
     let dfd = {};
-    new Promise((resolve, reject) => {
+    dfd.promise = new Promise((resolve, reject) => {
         dfd.resolve = resolve;
         dfd.reject = reject;
     })
