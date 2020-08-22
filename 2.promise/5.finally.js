@@ -6,7 +6,7 @@ let p = new Promise((resolve, reject) => {
 })
 
 Promise.prototype.finally = function(cb) {
-    return p.then(data => {
+    return this.then(data => {
         //Promise.resolve() 可以等到这个promise执行完成
         return Promise.resolve(cb()).then(() => data);
         // cb(); //finally传入的函数，无论成功或者失败都会执行
